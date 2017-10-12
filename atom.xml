@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-10-12T03:39:12.140Z</updated>
+  <updated>2017-10-12T06:15:40.108Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -17,16 +17,43 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Lister 过滤重复元素</title>
+    <link href="http://yoursite.com/2017/10/12/Lister-%E8%BF%87%E6%BB%A4%E9%87%8D%E5%A4%8D%E5%85%83%E7%B4%A0/"/>
+    <id>http://yoursite.com/2017/10/12/Lister-过滤重复元素/</id>
+    <published>2017-10-12T05:58:57.000Z</published>
+    <updated>2017-10-12T06:15:40.108Z</updated>
+    
+    <content type="html"><![CDATA[<p>先新建一个Help类，ComparisonHelper.cs<br>代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">using System;</div><div class="line">using System.Collections.Generic;</div><div class="line">using System.Linq;</div><div class="line">using System.Text;</div><div class="line"></div><div class="line">namespace WinForm</div><div class="line">&#123;</div><div class="line">    public class CommonEqualityComparer&lt;T, V&gt; : IEqualityComparer&lt;T&gt;</div><div class="line">    &#123;</div><div class="line">        private Func&lt;T, V&gt; keySelector;</div><div class="line"></div><div class="line">        public CommonEqualityComparer(Func&lt;T, V&gt; keySelector)</div><div class="line">        &#123;</div><div class="line">            this.keySelector = keySelector;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public bool Equals(T x, T y)</div><div class="line">        &#123;</div><div class="line">            return EqualityComparer&lt;V&gt;.Default.Equals(keySelector(x), keySelector(y));</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public int GetHashCode(T obj)</div><div class="line">        &#123;</div><div class="line">            return EqualityComparer&lt;V&gt;.Default.GetHashCode(keySelector(obj));</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    public static class CommonHelper</div><div class="line">    &#123;</div><div class="line">        /// &lt;summary&gt;</div><div class="line">        /// 自定义Distinct扩展方法</div><div class="line">        /// &lt;/summary&gt;</div><div class="line">        /// &lt;typeparam name=&quot;T&quot;&gt;要去重的对象类&lt;/typeparam&gt;</div><div class="line">        /// &lt;typeparam name=&quot;C&quot;&gt;自定义去重的字段类型&lt;/typeparam&gt;</div><div class="line">        /// &lt;param name=&quot;source&quot;&gt;要去重的对象&lt;/param&gt;</div><div class="line">        /// &lt;param name=&quot;getfield&quot;&gt;获取自定义去重字段的委托&lt;/param&gt;</div><div class="line">        /// &lt;returns&gt;&lt;/returns&gt;</div><div class="line">        public static IEnumerable&lt;T&gt; MyDistinct&lt;T, C&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T, C&gt; getfield)</div><div class="line">        &#123;</div><div class="line">            return source.Distinct(new CommonEqualityComparer&lt;T, C&gt;(getfield));</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p><p>然后再在主流呈里增加调用</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">var customNames = buyer.MyDistinct(p =&gt; p.CustomName);</div><div class="line">var customBuyNames = buyer.MyDistinct(p =&gt; p.CustomBuyName);</div><div class="line">var destinations = buyer.MyDistinct(p =&gt; p.Destination);</div><div class="line">           foreach (doc_Buyer customName in customNames)</div><div class="line">           &#123;</div><div class="line">               if (customName.CustomName != null &amp;&amp; customName.CustomName.Length &gt; 0)</div><div class="line">               &#123;</div><div class="line">                   cbCustomName.Items.Add(customName.CustomName);</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">           foreach (doc_Buyer customBuyName in customBuyNames)</div><div class="line">           &#123;</div><div class="line">               if (customBuyName.CustomBuyName != null &amp;&amp; customBuyName.CustomBuyName.Length &gt; 0)</div><div class="line">               &#123;</div><div class="line">                   cbcustomBuyName.Items.Add(customBuyName.CustomBuyName);</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">           foreach (doc_Buyer destination in destinations)</div><div class="line">           &#123;</div><div class="line">               if (destination.Destination != null &amp;&amp; destination.Destination.Length &gt; 0)</div><div class="line">               &#123;</div><div class="line">                   cbDestination.Items.Add(destination.Destination);</div><div class="line">               &#125;</div><div class="line">           &#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;先新建一个Help类，ComparisonHelper.cs&lt;br&gt;代码&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div 
+      
+    
+    </summary>
+    
+      <category term="C#" scheme="http://yoursite.com/categories/C/"/>
+    
+    
+      <category term="c#" scheme="http://yoursite.com/tags/c/"/>
+    
+  </entry>
+  
+  <entry>
     <title>wuti</title>
     <link href="http://yoursite.com/2017/10/12/wuti/"/>
     <id>http://yoursite.com/2017/10/12/wuti/</id>
     <published>2017-10-12T03:39:12.000Z</published>
-    <updated>2017-10-12T03:39:12.140Z</updated>
+    <updated>2017-10-12T04:15:37.388Z</updated>
     
     <summary type="html">
     
     </summary>
     
+    
+      <category term="1" scheme="http://yoursite.com/tags/1/"/>
     
   </entry>
   
